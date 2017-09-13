@@ -6,6 +6,7 @@ if not os.path.exists("./schoolSystem.db"):
     conn = sql.connect("schoolSystem.db")
     print("Creating")
     c = conn.cursor()#
+    names = names[:300]
     c.execute("""CREATE TABLE Students
     (id INTEGER PRIMARY KEY, firstName TEXT, lastName TEXT, state INTEGER)""")
     for name in names:
@@ -34,6 +35,9 @@ def tap(conn,name):#a user has selected their name
     for case in c.execute("SELECT state,id FROM Students WHERE firstName = ? AND lastName = ?",name):
         ids.append(case)
     ### now need to change the state and update the table
+    if len(ids) == 0:
+        print("user not found in the db")#
+        return
     if len(ids) > 1:
         student = ohshit(ids)
     else:
@@ -55,7 +59,7 @@ def tap(conn,name):#a user has selected their name
     
     conn.close()
 conn = sql.connect("schoolSystem.db")
-tap(conn,"scott harwood")
+tap(conn,"Meggi Meggi")
 time.sleep(60)
 conn = sql.connect("schoolSystem.db")
-tap(conn,"scott harwood")
+tap(conn,"Meggi Meggi")
