@@ -54,8 +54,3 @@ def tap(conn,name):#a user has selected their name
     conn.commit()
     
     conn.close()
-conn = sql.connect("schoolSystem.db")
-tap(conn,"scott harwood")
-time.sleep(60)
-conn = sql.connect("schoolSystem.db")
-tap(conn,"scott harwood")
