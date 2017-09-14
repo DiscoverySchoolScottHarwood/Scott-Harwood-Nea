@@ -9,17 +9,18 @@ for row in c.execute("SELECT firstName,lastName FROM Students WHERE state = 0"):
 NAMES = NAMES[:20]
 SCREENHEIGHT = 480
 SCREENWIDTH = 640
-def sliderChanged(self):
-        print(self.sliderval)
+
+
 
 class slider():
 
+
+
     def __init__(self,data,master,x,y):
         self.data = data
-        self.sliderVal = tk.IntVar
         rowHeight = 2
-        self.slider = tk.Scale(master, from_ = 0, to = len(data)-1,variable = self.sliderVal)
-        self.sliderVal.trace("w",sliderChanged)
+        self.slider = tk.Scale(master, from_ = 0, to = len(data)-1, command = self.sliderChanged)
+
         blank = tk.Button(master,text="",font=USEDFONT)
         self.displayed = int(SCREENHEIGHT / (rowHeight*USEDFONT[1]*2))#the number of elements in the list that is displayed on the screen
         self.slider.grid(row = y,column = x+1,rowspan = self.displayed)
@@ -30,9 +31,8 @@ class slider():
             button = tk.Button(master,text=name, font=USEDFONT, height=rowHeight, command=lambda:self.handleEntry(name))
             self.textFields.append(button)
             button.grid(row = y+i,column = x)
-        
-
-
+    def sliderChanged(self,*args):
+        print(self.slider.get())
     def handleEntry(self,name):
         pass
 
