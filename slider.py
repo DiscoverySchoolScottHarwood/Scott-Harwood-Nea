@@ -1,15 +1,17 @@
 import sqlite3 as sql
 import tkinter as tk
 USEDFONT = ("Andale Mono", 16)
+#basic code to assemble data set
 NAMES = []
 conn = sql.connect("schoolSystem.db")
 c = conn.cursor()
-count = 0
+
 for row in c.execute("SELECT firstName,lastName FROM Students WHERE state = 0"):
-    count +=1
     NAMES.append("{} {}".format(row[0],row[1]))
-print(count)
-#NAMES = NAMES[:20]
+
+NAMES = NAMES[:20]
+#/basic code to assemble data set
+
 SCREENHEIGHT = 480
 SCREENWIDTH = 700
 
@@ -21,7 +23,7 @@ def getMaxwidth(data):
             maxLen = len(x)
             val = x
     return val
-print(len(NAMES))
+
 class slider():
 
     def __init__(self,data,master,x,y,height):
@@ -29,15 +31,13 @@ class slider():
         self.data = data
         self.rowHeight = 2
         self.master = master
-        maxW = getMaxwidth(data)
-        print(maxW)
-        self.maxWidth = len(maxW)
+        self.maxWidth = len(getMaxwidth(data))
         self.divider = self.rowHeight * USEDFONT[1] * 2
         self.displayed = int(SCREENHEIGHT / self.divider)#the number of elements in the list that is displayed on the screen
         self.slider = tk.Scale(master, from_ = 0, to = (len(data)-self.displayed), length = height,command = self.sliderChanged)
         self.slider.grid(row = y,column = x+1,rowspan = self.displayed) # a list of all currently displated Buttons
         self.genButtonslist(0,self.displayed)
-        
+
     def genButtonslist(self,lr,ur):
         self.textButtons = []
         for i,name in enumerate(self.data[lr:ur]):
