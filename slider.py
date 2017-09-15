@@ -1,5 +1,6 @@
 import sqlite3 as sql
 import tkinter as tk
+import copy
 USEDFONT = ("Andale Mono", 16)
 #basic code to assemble data set
 NAMES = []
@@ -41,12 +42,12 @@ class slider():
     def genButtonslist(self,lr,ur):
         self.textButtons = []
         for i,name in enumerate(self.data[lr:ur]):
-            button = tk.Button(self.master,text=name, font=USEDFONT, width=self.maxWidth,height=self.rowHeight, command=lambda:self.handleEntry(name))
+            button = tk.Button(self.master,text=name, font=USEDFONT, width=self.maxWidth,height=self.rowHeight, command= lambda name=name: self.handleEntry(name))
             self.textButtons.append(button)
             button.grid(row = self.y+i,column = self.x)
     
-    def handleEntry(self):
-        pass
+    def handleEntry(self,name):
+        print(name)
 
     def sliderChanged(self,*args):
         for x in self.textButtons:
