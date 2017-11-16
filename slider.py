@@ -51,11 +51,16 @@ class slider():
         n = name.split()
         print(n)
         for x in c.execute("SELECT id,state FROM Students WHERE firstName = ? AND lastName = ?",(n[0],n[1])):
-            if x[1] == "1":
-                c.execute("UPDATE ? SET inTime = ?",(x[0],time.strftime("%H:%M:%S",time.time())))
+            print(x)
+            if x[1] == 1:
+                print("Got here")
+                c.execute("UPDATE '%s' SET inTime = ?" % x[0],(datetime.datetime.strftime(datetime.datetime.now(),"%H-%M"),))
+                c.execute("UPDATE Students SET state = 0 WHERE id = ?",(x[0],))
             else:
+                print("The other one")
                 record = (datetime.datetime.strftime(datetime.date.today(),"%d-%m-%y"),datetime.datetime.strftime(datetime.datetime.now(),"%H-%M"),"Still logged out")
                 c.execute("INSERT INTO '%s' VALUES (?,?,?)" % x[0],record)
+                c.execute("UPDATE Students SET state = 1 WHERE firstName = ? AND lastName = ? AND state = 0",(n[0],n[1]))
 
         conn.commit()
     def sliderChanged(self,*args):
@@ -76,34 +81,44 @@ class Main(tk.Frame):
         self.grid()     
         self.state = 0
         data = []
+        self.subframe = tk.Frame()
+        self.subframe.grid()
         for row in c.execute("SELECT firstName,lastName FROM Students WHERE state = 0"):
             data.append("{} {}".format(row[0],row[1]))
-        self.slider = slider(data,self,1,0,SCREENHEIGHT-200)
+        self.slider = slider(data,self.subframe,1,0,SCREENHEIGHT-200)
         self.createWidgets()
-        self.button_pressed()
-        
+        self.in_button_pressed
 
     def createWidgets(self):
-        self.OutB = tk.Button(self.master,text="Sign Out",font=USEDFONT,width=int(SCREENWIDTH/2),command = self.button_pressed)
-        self.InB = tk.Button(self.master,text="Sign In",font=USEDFONT,width=int(SCREENWIDTH/2),command=self.button_pressed)
+        self.OutB = tk.Button(self.master,text="Sign Out",font=USEDFONT,command = self.out_button_pressed)
+        self.InB = tk.Button(self.master,text="Sign In",font=USEDFONT,command=self.in_button_pressed)
         self.OutB.grid(column=0,row=0)
         self.InB.grid(column=1,row=0)
 
-    def button_pressed(self):
+    def out_button_pressed(self):
         print("button pressed")
-        if self.state == 0:#is in sign out mode
+        print(self.state)
+        if self.state == 1:#is in sign in mode
             print()
             self.slider.grid_forget()
             data = []
             for row in c.execute("SELECT firstName,lastName FROM Students WHERE state = 0"):
                 data.append("{} {}".format(row[0],row[1]))
-            self.slider = slider(data,self,1,0,SCREENHEIGHT-50)
-        else:
+            if len(data) > 0:
+                self.slider = slider(data,self.subframe,1,0,SCREENHEIGHT-150)
+                self.state = not self.state
+
+    def in_button_pressed(self):
+        print("In Button Pressed")
+        print(self.state)
+        if self.state == 0:
             self.slider.grid_forget()
             data = []
-            for row in c.execute("SELECT firstName,lastName FROM Student WHERE state = 1"):
+            for row in c.execute("SELECT firstName,lastName FROM Students WHERE state = 1"):
                 data.append("{} {}".format(row[0],row[1]))
-            self.slider = slider(data,self,1,0,SCREENHEIGHT-200)
+            if len(data) > 0:
+                self.slider = slider(data,self.subframe,1,0,SCREENHEIGHT-200)
+            self.state = not self.state
 
 
 root = tk.Tk()
