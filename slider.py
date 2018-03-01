@@ -28,25 +28,34 @@ def getMaxwidth(data):
 
 class slider():
 
-    def __init__(self,data,master,x,y,height):
+    def __init__(self,command,master,x,y,height):
         self.x,self.y = x,y
-        self.data = data
+        self.command = command
+        self.getData()
         self.rowHeight = 2
         self.master = master
-        self.maxWidth = len(getMaxwidth(data))
+        self.height = height
+        self.maxWidth = len(getMaxwidth(self.data))
         self.divider = self.rowHeight * USEDFONT[1] * 2
         self.displayed = int(SCREENHEIGHT / self.divider)#the number of elements in the list that is displayed on the screen
-        self.slider = tk.Scale(master, from_ = 0, to = (len(data)-self.displayed), length = height,command = self.sliderChanged)
+        self.slider = tk.Scale(self.master, from_ = 0, to = (len(self.data)-self.displayed), length = self.height,command = self.sliderChanged,showvalue = 0)
         self.slider.grid(row = y,column = x+1,rowspan = self.displayed) # a list of all currently displated Buttons
         self.genButtonslist(0,self.displayed)
+    
+    def getData(self):
+        self.data = []
+        for x in c.execute(self.command):
+            self.data.append(" ".join(x))
+        if len(self.data) == 0:
+            self.grid_forget()
 
     def genButtonslist(self,lr,ur):
-        self.textButtons = []
+        self.textButtons = {}
         for i,name in enumerate(self.data[lr:ur]):
             button = tk.Button(self.master,text=name, font=USEDFONT, width=self.maxWidth,height=self.rowHeight, command= lambda name=name: self.handleEntry(name))
-            self.textButtons.append(button)
+            self.textButtons[name] = button
             button.grid(row = self.y+i,column = self.x)
-    
+
     def handleEntry(self,name):
         n = name.split()
         print(n)
@@ -61,16 +70,23 @@ class slider():
                 record = (datetime.datetime.strftime(datetime.date.today(),"%d-%m-%y"),datetime.datetime.strftime(datetime.datetime.now(),"%H-%M"),"Still logged out")
                 c.execute("INSERT INTO '%s' VALUES (?,?,?)" % x[0],record)
                 c.execute("UPDATE Students SET state = 1 WHERE firstName = ? AND lastName = ? AND state = 0",(n[0],n[1]))
-
+        self.getData()
+        self.textButtons[name].grid_forget()
+        self.sliderChanged()
+        
+        self.master.update()
         conn.commit()
+
     def sliderChanged(self,*args):
         for x in self.textButtons:
-            x.grid_forget()
+            self.textButtons[x].grid_forget()
         val = self.slider.get()
         self.genButtonslist(val, val+self.displayed)
 
     def grid_forget(self):
-        for x in self.textButtons:
+        print(self.textButtons)
+
+        for i,x in self.textButtons.items():
             x.grid_forget()
         self.slider.grid_forget()
         
@@ -83,11 +99,10 @@ class Main(tk.Frame):
         data = []
         self.subframe = tk.Frame()
         self.subframe.grid()
-        for row in c.execute("SELECT firstName,lastName FROM Students WHERE state = 0"):
-            data.append("{} {}".format(row[0],row[1]))
-        self.slider = slider(data,self.subframe,1,0,SCREENHEIGHT-200)
+        self.slider = slider("SELECT firstName,lastName FROM Students WHERE state = 0",
+                             self.subframe,1,0,SCREENHEIGHT-200)
         self.createWidgets()
-        self.in_button_pressed
+        self.out_button_pressed()
 
     def createWidgets(self):
         self.OutB = tk.Button(self.master,text="Sign Out",font=USEDFONT,command = self.out_button_pressed)
@@ -99,14 +114,9 @@ class Main(tk.Frame):
         print("button pressed")
         print(self.state)
         if self.state == 1:#is in sign in mode
-            print()
             self.slider.grid_forget()
-            data = []
-            for row in c.execute("SELECT firstName,lastName FROM Students WHERE state = 0"):
-                data.append("{} {}".format(row[0],row[1]))
-            if len(data) > 0:
-                self.slider = slider(data,self.subframe,1,0,SCREENHEIGHT-150)
-                self.state = not self.state
+            self.slider = slider("SELECT firstName,lastName FROM Students WHERE state = 0",self.subframe,1,0,SCREENHEIGHT-150)
+            self.state = not self.state
 
     def in_button_pressed(self):
         print("In Button Pressed")
@@ -114,10 +124,7 @@ class Main(tk.Frame):
         if self.state == 0:
             self.slider.grid_forget()
             data = []
-            for row in c.execute("SELECT firstName,lastName FROM Students WHERE state = 1"):
-                data.append("{} {}".format(row[0],row[1]))
-            if len(data) > 0:
-                self.slider = slider(data,self.subframe,1,0,SCREENHEIGHT-200)
+            self.slider = slider("SELECT firstName,lastName FROM Students WHERE state = 1",self.subframe,1,0,SCREENHEIGHT-200)
             self.state = not self.state
 
 
